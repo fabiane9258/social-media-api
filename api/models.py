@@ -1,5 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.conf import settings
+
 
 class User(AbstractUser):
     ROLE_CHOICES = (
@@ -15,3 +17,17 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.username
+
+
+class Post(models.Model):
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE, 
+        related_name="posts"
+    )
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        # Return first 30 characters of content for readability
+        return f"{self.author.username}: {self.content[:30]}"
