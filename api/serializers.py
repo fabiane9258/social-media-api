@@ -1,10 +1,21 @@
 from rest_framework import serializers
-from .models import User, Post
+from .models import User, Post, Like, Comment, Follow
 from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth import get_user_model
 
+User = get_user_model()
+
+# Serializer for viewing user profiles
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "username", "email", "role", "bio", "profile_picture_url"]
+        read_only_fields = ["id", "username", "role"]
+
+# Serializer for user registration
 class UserRegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
-    password2 = serializers.CharField(write_only=True, required=True)  # For password confirmation
+    password2 = serializers.CharField(write_only=True, required=True)  # Password confirmation
 
     class Meta:
         model = User
@@ -28,10 +39,36 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         user.save()
         return user
 
+# Serializer for posts
 class PostSerializer(serializers.ModelSerializer):
     author_username = serializers.ReadOnlyField(source='author.username')
 
     class Meta:
         model = Post
-        fields = ['id', 'author', 'author_username', 'content', 'created_at']
+        fields = ['id', 'author', 'author_username', 'content', 'image', 'created_at']
         read_only_fields = ['author', 'created_at']
+
+# Serializer for comments
+class CommentSerializer(serializers.ModelSerializer):
+    user = serializers.StringRelatedField(read_only=True)
+
+    class Meta:
+        model = Comment
+        fields = ['id', 'user', 'content', 'created_at']
+
+# Serializer for likes
+class LikeSerializer(serializers.ModelSerializer):
+    user = serializers.StringRelatedField(read_only=True)
+
+    class Meta:
+        model = Like
+        fields = ['id', 'user', 'created_at']
+
+# Serializer for follows
+class FollowSerializer(serializers.ModelSerializer):
+    follower = serializers.StringRelatedField(read_only=True)
+    following = serializers.StringRelatedField(read_only=True)
+
+    class Meta:
+        model = Follow
+        fields = ['id', 'follower', 'following', 'created_at']
