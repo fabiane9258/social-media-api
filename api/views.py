@@ -1,5 +1,6 @@
-from rest_framework import generics, permissions, filters, serializers
+from rest_framework import generics, permissions, filters
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.shortcuts import get_object_or_404
@@ -14,7 +15,27 @@ from .serializers import (
     FollowSerializer
 )
 
+# -------------------------
+# API Root
+# -------------------------
+class ApiRootView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        return Response({
+            "register": request.build_absolute_uri('register/'),
+            "login": request.build_absolute_uri('login/'),
+            "token_refresh": request.build_absolute_uri('token/refresh/'),
+            "posts": request.build_absolute_uri('posts/'),
+            "profile": request.build_absolute_uri('profile/'),
+            "feed": request.build_absolute_uri('feed/'),
+            "search_users": request.build_absolute_uri('search/users/'),
+            "search_posts": request.build_absolute_uri('search/posts/'),
+        })
+
+# -------------------------
 # User Profile
+# -------------------------
 class UserProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = UserProfileSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -22,12 +43,16 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
     def get_object(self):
         return self.request.user
 
+# -------------------------
 # Registration
+# -------------------------
 class RegisterView(generics.CreateAPIView):
     serializer_class = UserRegisterSerializer
     permission_classes = [permissions.AllowAny]
 
+# -------------------------
 # JWT
+# -------------------------
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
@@ -39,7 +64,9 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
 
+# -------------------------
 # Posts
+# -------------------------
 class PostListCreateView(generics.ListCreateAPIView):
     queryset = Post.objects.all().order_by('-created_at')
     serializer_class = PostSerializer
@@ -53,7 +80,9 @@ class PostDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = PostSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+# -------------------------
 # Comments
+# -------------------------
 class CommentCreateView(generics.CreateAPIView):
     serializer_class = CommentSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -62,7 +91,9 @@ class CommentCreateView(generics.CreateAPIView):
         post = get_object_or_404(Post, pk=self.kwargs['post_id'])
         serializer.save(user=self.request.user, post=post)
 
+# -------------------------
 # Likes
+# -------------------------
 class LikeToggleView(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -74,7 +105,9 @@ class LikeToggleView(generics.GenericAPIView):
             return Response({"message": "Unliked"})
         return Response({"message": "Liked"})
 
+# -------------------------
 # Follows
+# -------------------------
 class FollowToggleView(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -88,7 +121,9 @@ class FollowToggleView(generics.GenericAPIView):
             return Response({"message": "Unfollowed"})
         return Response({"message": "Followed"})
 
+# -------------------------
 # Feed
+# -------------------------
 class FeedView(generics.ListAPIView):
     serializer_class = PostSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -98,7 +133,9 @@ class FeedView(generics.ListAPIView):
         following_users = user.following.values_list('following', flat=True)
         return Post.objects.filter(author__in=following_users).select_related('author').prefetch_related('likes', 'comments').order_by('-created_at')
 
+# -------------------------
 # Search
+# -------------------------
 class UserSearchView(generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserProfileSerializer
