@@ -1,7 +1,3 @@
-"""
-Django settings for config project.
-"""
-
 import os
 from pathlib import Path
 from dotenv import load_dotenv
@@ -10,23 +6,20 @@ from datetime import timedelta
 # Load environment variables from .env
 load_dotenv()
 
+# Base directory
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# -----------------------------
-# Security
-# -----------------------------
+# SECURITY
 SECRET_KEY = os.getenv('SECRET_KEY', 'fallback-secret-key')
-DEBUG = os.getenv('DEBUG', 'True').lower() in ['true', '1']
+DEBUG = os.getenv('Debug', 'False').lower() in ['true', '1']
 
 ALLOWED_HOSTS = [
     '127.0.0.1',
     'localhost',
-    'fabatash.pythonanywhere.com',  # Replace with your PythonAnywhere domain
+    'fabatash.pythonanywhere.com',  # Add your PythonAnywhere domain
 ]
 
-# -----------------------------
-# Applications
-# -----------------------------
+# Installed apps
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -44,11 +37,7 @@ INSTALLED_APPS = [
     'api',
 ]
 
-AUTH_USER_MODEL = 'api.User'
-
-# -----------------------------
 # Middleware
-# -----------------------------
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -62,10 +51,11 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'config.urls'
 
+# Templates
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],  # Optional
+        'DIRS': [BASE_DIR / 'templates'],  # Add if you have templates
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -80,16 +70,16 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-# -----------------------------
-# Database: MySQL
-# -----------------------------
-if 'PYTHONANYWHERE_DOMAIN' in os.environ:  # For deployment
+# ---------------------------
+# Database configuration
+# ---------------------------
+if 'PYTHONANYWHERE_DOMAIN' in os.environ:  # When running on PythonAnywhere
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'fabatash$social_media',  # Replace with your PythonAnywhere DB
-            'USER': 'fabatash',               # Replace with your PythonAnywhere username
-            'PASSWORD': os.getenv('MYSQL_PASSWORD', 'YourPasswordHere'),
+            'NAME': 'fabatash$social_media',  # PythonAnywhere DB name format
+            'USER': 'fabatash',               # PythonAnywhere username
+            'PASSWORD': os.getenv('DB_PASSWORD', ''),
             'HOST': 'fabatash.mysql.pythonanywhere-services.com',
             'PORT': '3306',
         }
@@ -98,17 +88,18 @@ else:  # Local development
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
-            'NAME': os.getenv('MYSQL_DB', 'social_media'),
-            'USER': os.getenv('MYSQL_USER', 'root'),
-            'PASSWORD': os.getenv('MYSQL_PASSWORD', ''),
-            'HOST': os.getenv('MYSQL_HOST', 'localhost'),
-            'PORT': os.getenv('MYSQL_PORT', '3306'),
+            'NAME': os.getenv('DB_NAME', 'social_media'),
+            'USER': os.getenv('DB_USER', 'root'),
+            'PASSWORD': os.getenv('DB_PASSWORD', ''),
+            'HOST': os.getenv('DB_HOST', 'localhost'),
+            'PORT': os.getenv('DB_PORT', '3306'),
         }
     }
 
-# -----------------------------
+# Auth
+AUTH_USER_MODEL = 'api.User'
+
 # Password validation
-# -----------------------------
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -116,17 +107,13 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-# -----------------------------
 # Internationalization
-# -----------------------------
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-# -----------------------------
-# Static & Media
-# -----------------------------
+# Static & media
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static']
@@ -134,11 +121,10 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# Default primary key
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# -----------------------------
-# Django REST Framework + JWT
-# -----------------------------
+# DRF & JWT
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -146,8 +132,6 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10,
 }
 
 SIMPLE_JWT = {
@@ -157,9 +141,7 @@ SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION': True,
 }
 
-# -----------------------------
 # CORS & CSRF
-# -----------------------------
 CORS_ALLOW_ALL_ORIGINS = True
 CSRF_TRUSTED_ORIGINS = [
     'https://fabatash.pythonanywhere.com',
@@ -167,9 +149,7 @@ CSRF_TRUSTED_ORIGINS = [
     'http://localhost:8000',
 ]
 
-# -----------------------------
-# Security settings for deployment
-# -----------------------------
-SECURE_SSL_REDIRECT = False  # Handled by PythonAnywhere
+# Security settings for PythonAnywhere
+SECURE_SSL_REDIRECT = False
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
