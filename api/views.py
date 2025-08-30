@@ -1,7 +1,9 @@
-from rest_framework import generics, permissions, filters
+from rest_framework import generics, permissions, filters, serializers
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from django.shortcuts import get_object_or_404
+
 from .models import User, Post, Comment, Like, Follow
 from .serializers import (
     UserRegisterSerializer,
@@ -12,9 +14,7 @@ from .serializers import (
     FollowSerializer
 )
 
-# ---------------------------
-# Profile view
-# ---------------------------
+# User Profile
 class UserProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = UserProfileSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -22,16 +22,12 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
     def get_object(self):
         return self.request.user
 
-# ---------------------------
-# Registration view
-# ---------------------------
+# Registration
 class RegisterView(generics.CreateAPIView):
     serializer_class = UserRegisterSerializer
     permission_classes = [permissions.AllowAny]
 
-# ---------------------------
-# JWT login view
-# ---------------------------
+# JWT
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
@@ -43,9 +39,7 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
 
-# ---------------------------
-# Post views
-# ---------------------------
+# Posts
 class PostListCreateView(generics.ListCreateAPIView):
     queryset = Post.objects.all().order_by('-created_at')
     serializer_class = PostSerializer
@@ -59,62 +53,42 @@ class PostDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = PostSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-# ---------------------------
-# Comment views
-# ---------------------------
+# Comments
 class CommentCreateView(generics.CreateAPIView):
     serializer_class = CommentSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def perform_create(self, serializer):
-        try:
-            post = Post.objects.get(pk=self.kwargs['post_id'])
-        except Post.DoesNotExist:
-            raise serializers.ValidationError("Post not found")
+        post = get_object_or_404(Post, pk=self.kwargs['post_id'])
         serializer.save(user=self.request.user, post=post)
 
-# ---------------------------
-# Like views
-# ---------------------------
+# Likes
 class LikeToggleView(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, post_id):
-        try:
-            post = Post.objects.get(pk=post_id)
-        except Post.DoesNotExist:
-            return Response({"error": "Post not found"}, status=404)
-
+        post = get_object_or_404(Post, pk=post_id)
         like, created = Like.objects.get_or_create(user=request.user, post=post)
         if not created:
             like.delete()
             return Response({"message": "Unliked"})
         return Response({"message": "Liked"})
 
-# ---------------------------
-# Follow views
-# ---------------------------
+# Follows
 class FollowToggleView(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, user_id):
         if request.user.id == user_id:
             return Response({"error": "You cannot follow yourself"}, status=400)
-
-        try:
-            user_to_follow = User.objects.get(pk=user_id)
-        except User.DoesNotExist:
-            return Response({"error": "User not found"}, status=404)
-
+        user_to_follow = get_object_or_404(User, pk=user_id)
         follow, created = Follow.objects.get_or_create(follower=request.user, following=user_to_follow)
         if not created:
             follow.delete()
             return Response({"message": "Unfollowed"})
         return Response({"message": "Followed"})
 
-# ---------------------------
-# Feed view: posts from followed users
-# ---------------------------
+# Feed
 class FeedView(generics.ListAPIView):
     serializer_class = PostSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -122,14 +96,12 @@ class FeedView(generics.ListAPIView):
     def get_queryset(self):
         user = self.request.user
         following_users = user.following.values_list('following', flat=True)
-        return Post.objects.filter(author__in=following_users).order_by('-created_at')
+        return Post.objects.filter(author__in=following_users).select_related('author').prefetch_related('likes', 'comments').order_by('-created_at')
 
-# ---------------------------
-# Search views
-# ---------------------------
+# Search
 class UserSearchView(generics.ListAPIView):
     queryset = User.objects.all()
-    serializer_class = UserRegisterSerializer
+    serializer_class = UserProfileSerializer
     filter_backends = [filters.SearchFilter]
     search_fields = ['username', 'role']
 

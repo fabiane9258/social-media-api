@@ -1,8 +1,22 @@
 from django.urls import path
-from .views import RegisterView, MyTokenObtainPairView, PostListCreateView, PostDetailView, UserProfileView, CommentCreateView, LikeToggleView, FollowToggleView, FeedView, UserSearchView, PostSearchView
+from .views import (
+    RegisterView,
+    MyTokenObtainPairView,
+    PostListCreateView,
+    PostDetailView,
+    UserProfileView,
+    CommentCreateView,
+    LikeToggleView,
+    FollowToggleView,
+    FeedView,
+    UserSearchView,
+    PostSearchView
+)
 from rest_framework_simplejwt.views import TokenRefreshView
 from django.conf import settings
 from django.conf.urls.static import static
+
+app_name = 'api'
 
 urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),

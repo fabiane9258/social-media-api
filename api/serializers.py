@@ -5,21 +5,22 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
-# Serializer for viewing user profiles
+# User profile
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["id", "username", "email", "role", "bio", "profile_picture_url"]
         read_only_fields = ["id", "username", "role"]
 
-# Serializer for user registration
+# User registration
 class UserRegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
-    password2 = serializers.CharField(write_only=True, required=True)  # Password confirmation
+    password2 = serializers.CharField(write_only=True, required=True)
 
     class Meta:
         model = User
         fields = ('username', 'email', 'role', 'bio', 'profile_picture_url', 'password', 'password2')
+        extra_kwargs = {'email': {'required': True}}
 
     def validate(self, attrs):
         if attrs['password'] != attrs['password2']:
@@ -39,7 +40,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         user.save()
         return user
 
-# Serializer for posts
+# Posts
 class PostSerializer(serializers.ModelSerializer):
     author_username = serializers.ReadOnlyField(source='author.username')
 
@@ -48,7 +49,7 @@ class PostSerializer(serializers.ModelSerializer):
         fields = ['id', 'author', 'author_username', 'content', 'image', 'created_at']
         read_only_fields = ['author', 'created_at']
 
-# Serializer for comments
+# Comments
 class CommentSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField(read_only=True)
 
@@ -56,7 +57,7 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = ['id', 'user', 'content', 'created_at']
 
-# Serializer for likes
+# Likes
 class LikeSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField(read_only=True)
 
@@ -64,11 +65,13 @@ class LikeSerializer(serializers.ModelSerializer):
         model = Like
         fields = ['id', 'user', 'created_at']
 
-# Serializer for follows
+# Follows
 class FollowSerializer(serializers.ModelSerializer):
     follower = serializers.StringRelatedField(read_only=True)
     following = serializers.StringRelatedField(read_only=True)
+    follower_id = serializers.ReadOnlyField(source='follower.id')
+    following_id = serializers.ReadOnlyField(source='following.id')
 
     class Meta:
         model = Follow
-        fields = ['id', 'follower', 'following', 'created_at']
+        fields = ['id', 'follower', 'following', 'follower_id', 'following_id', 'created_at']
