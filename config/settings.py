@@ -2,7 +2,9 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 from datetime import timedelta
-import dj_database_url
+import warnings
+warnings.filterwarnings("ignore", message="No DATABASE_URL environment variable set")
+
 
 # Load environment variables from .env
 load_dotenv()
@@ -24,14 +26,16 @@ ALLOWED_HOSTS = [
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('MYSQLDATABASE', '<username>$<dbname>'),
-        'USER': os.getenv('MYSQLUSER', '<username>'),
-        'PASSWORD': os.getenv('MYSQLPASSWORD', '<your-password>'),
-        'HOST': os.getenv('MYSQLHOST', '<username>.mysql.pythonanywhere-services.com'),
+        'NAME': 'farbee9258$default',
+        'USER': 'farbee9258',
+        'PASSWORD': 'Mysql!1234',
+        'HOST': 'farbee9258.mysql.pythonanywhere-services.com',
         'PORT': '3306',
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        },
     }
 }
-
 
 
 # Installed apps
@@ -86,15 +90,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-
-# Railway uses DATABASE_URL env variable for MySQL
-DATABASES = {
-    'default': dj_database_url.config(
-        default=os.getenv("DATABASE_URL"),
-        conn_max_age=600,   # keeps connections alive
-        ssl_require=False   # Railway private doesn’t need SSL
-    )
-}
 
 # Auth
 AUTH_USER_MODEL = 'api.User'
