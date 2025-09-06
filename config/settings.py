@@ -2,29 +2,29 @@ import os
 from pathlib import Path
 from datetime import timedelta
 import warnings
-
 warnings.filterwarnings("ignore", message="No DATABASE_URL environment variable set")
 
 # Base directory
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY
-SECRET_KEY = 'your-secret-key-here'  # replace with your actual secret key
-DEBUG = False  # set to True for development, False for production
+SECRET_KEY = os.getenv('SECRET_KEY', 'fallback-secret-key')
+DEBUG = os.getenv('DEBUG', 'False').lower() in ['true', '1']
 
 ALLOWED_HOSTS = [
     '127.0.0.1',
     'localhost',
     '.pythonanywhere.com',
+    '.railway.app',
 ]
 
-# Database configuration
+# --- DATABASE CONFIGURATION ---
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'farbee9258$default',
-        'USER': 'farbee9258',
-        'PASSWORD': 'Mysql!1234',
+        'NAME': 'farbee9258$default',  # your DB name on PythonAnywhere
+        'USER': 'farbee9258',          # your DB user
+        'PASSWORD': 'Mysql!1234',      # your DB password
         'HOST': 'farbee9258.mysql.pythonanywhere-services.com',
         'PORT': '3306',
         'OPTIONS': {
@@ -70,7 +70,7 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],  # Add if you have templates
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
