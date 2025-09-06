@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 from datetime import timedelta
+import dj_database_url
 
 # Load environment variables from .env
 load_dotenv()
@@ -13,11 +14,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY', 'fallback-secret-key')
 DEBUG = os.getenv('Debug', 'False').lower() in ['true', '1']
 
-ALLOWED_HOSTS = [
-    '127.0.0.1',
-    'localhost',
-    'fabatash.pythonanywhere.com',  # Add your PythonAnywhere domain
-]
+ALLOWED_HOSTS = ['*']
+
 
 # Installed apps
 INSTALLED_APPS = [
@@ -73,28 +71,19 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # ---------------------------
 # Database configuration
 # ---------------------------
-if 'PYTHONANYWHERE_DOMAIN' in os.environ:  # When running on PythonAnywhere
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'fabatash$social_media',  # PythonAnywhere DB name format
-            'USER': 'fabatash',               # PythonAnywhere username
-            'PASSWORD': os.getenv('DB_PASSWORD', ''),
-            'HOST': 'fabatash.mysql.pythonanywhere-services.com',
-            'PORT': '3306',
-        }
+
+# Check if running on Railway
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': os.getenv("MYSQLDATABASE"),     # -> railway
+        'USER': os.getenv("MYSQLUSER"),         # -> root
+        'PASSWORD': os.getenv("MYSQLPASSWORD"), # -> MYSQL_ROOT_PASSWORD
+        'HOST': os.getenv("MYSQLHOST"),         # -> RAILWAY_PRIVATE_DOMAIN
+        'PORT': os.getenv("MYSQLPORT", "3306"),
     }
-else:  # Local development
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': os.getenv('DB_NAME', 'social_media'),
-            'USER': os.getenv('DB_USER', 'root'),
-            'PASSWORD': os.getenv('DB_PASSWORD', ''),
-            'HOST': os.getenv('DB_HOST', 'localhost'),
-            'PORT': os.getenv('DB_PORT', '3306'),
-        }
-    }
+}
 
 # Auth
 AUTH_USER_MODEL = 'api.User'
