@@ -12,13 +12,26 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY
 SECRET_KEY = os.getenv('SECRET_KEY', 'fallback-secret-key')
-DEBUG = os.getenv('Debug', 'False').lower() in ['true', '1']
+DEBUG = os.getenv('DEBUG', 'False').lower() in ['true', '1']
+
 
 ALLOWED_HOSTS = [
     '127.0.0.1',
     'localhost',
-    'web-production-a973.up.railway.app',
+    '.railway.app',
 ]
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': os.getenv('MYSQLDATABASE'),
+        'USER': os.getenv('MYSQLUSER'),
+        'PASSWORD': os.getenv('MYSQLPASSWORD'),
+        'HOST': os.getenv('MYSQLHOST'),
+        'PORT': os.getenv('MYSQLPORT', '3306'),
+    }
+}
+
 
 
 # Installed apps
@@ -44,6 +57,7 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -72,21 +86,14 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-# ---------------------------
-# Database configuration
-# ---------------------------
 
-# Check if running on Railway
-
+# Railway uses DATABASE_URL env variable for MySQL
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv("MYSQLDATABASE"),     # -> railway
-        'USER': os.getenv("MYSQLUSER"),         # -> root
-        'PASSWORD': os.getenv("MYSQLPASSWORD"), # -> MYSQL_ROOT_PASSWORD
-        'HOST': os.getenv("MYSQLHOST"),         # -> RAILWAY_PRIVATE_DOMAIN
-        'PORT': os.getenv("MYSQLPORT", "3306"),
-    }
+    'default': dj_database_url.config(
+        default=os.getenv("DATABASE_URL"),
+        conn_max_age=600,   # keeps connections alive
+        ssl_require=False   # Railway private doesn’t need SSL
+    )
 }
 
 # Auth
@@ -137,12 +144,14 @@ SIMPLE_JWT = {
 # CORS & CSRF
 CORS_ALLOW_ALL_ORIGINS = True
 CSRF_TRUSTED_ORIGINS = [
-    'https://fabatash.pythonanywhere.com',
+    'https://*.railway.app',
     'http://127.0.0.1:8000',
     'http://localhost:8000',
 ]
 
-# Security settings for PythonAnywhere
+# Security settings
 SECURE_SSL_REDIRECT = False
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'

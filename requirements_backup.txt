@@ -5,4 +5,3 @@ whitenoise>=6.5.0
 mysqlclient>=2.2.0        # MySQL driver for Django
 python-dotenv>=1.0.1      # If you use .env files
 Pillow>=10.0.0            # Only if you have ImageField / media
-
