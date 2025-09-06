@@ -9,8 +9,8 @@ warnings.filterwarnings("ignore", message="No DATABASE_URL environment variable 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY
-SECRET_KEY = 'your-secret-key'  # replace with a real secret key
-DEBUG = False
+SECRET_KEY = 'your-secret-key-here'  # replace with your actual secret key
+DEBUG = False  # set to True for development, False for production
 
 ALLOWED_HOSTS = [
     '127.0.0.1',
@@ -18,7 +18,7 @@ ALLOWED_HOSTS = [
     '.pythonanywhere.com',
 ]
 
-# Database (MySQL)
+# Database configuration
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -143,5 +143,4 @@ SECURE_SSL_REDIRECT = False
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
-# WhiteNoise storage for static files
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
