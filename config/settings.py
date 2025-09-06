@@ -1,28 +1,24 @@
 import os
 from pathlib import Path
-from dotenv import load_dotenv
 from datetime import timedelta
 import warnings
+
 warnings.filterwarnings("ignore", message="No DATABASE_URL environment variable set")
-
-
-# Load environment variables from .env
-load_dotenv()
 
 # Base directory
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY
-SECRET_KEY = os.getenv('SECRET_KEY', 'fallback-secret-key')
-DEBUG = os.getenv('DEBUG', 'False').lower() in ['true', '1']
-
+SECRET_KEY = 'your-secret-key'  # replace with a real secret key
+DEBUG = False
 
 ALLOWED_HOSTS = [
     '127.0.0.1',
     'localhost',
-    '.railway.app',
+    '.pythonanywhere.com',
 ]
 
+# Database (MySQL)
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -36,7 +32,6 @@ DATABASES = {
         },
     }
 }
-
 
 # Installed apps
 INSTALLED_APPS = [
@@ -90,7 +85,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-
 # Auth
 AUTH_USER_MODEL = 'api.User'
 
@@ -139,7 +133,7 @@ SIMPLE_JWT = {
 # CORS & CSRF
 CORS_ALLOW_ALL_ORIGINS = True
 CSRF_TRUSTED_ORIGINS = [
-    'https://*.railway.app',
+    'https://*.pythonanywhere.com',
     'http://127.0.0.1:8000',
     'http://localhost:8000',
 ]
@@ -149,4 +143,5 @@ SECURE_SSL_REDIRECT = False
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
+# WhiteNoise storage for static files
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
