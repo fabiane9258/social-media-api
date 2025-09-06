@@ -24,11 +24,11 @@ ALLOWED_HOSTS = [
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('MYSQLDATABASE'),
-        'USER': os.getenv('MYSQLUSER'),
-        'PASSWORD': os.getenv('MYSQLPASSWORD'),
-        'HOST': os.getenv('MYSQLHOST'),
-        'PORT': os.getenv('MYSQLPORT', '3306'),
+        'NAME': os.getenv('MYSQLDATABASE', '<username>$<dbname>'),
+        'USER': os.getenv('MYSQLUSER', '<username>'),
+        'PASSWORD': os.getenv('MYSQLPASSWORD', '<your-password>'),
+        'HOST': os.getenv('MYSQLHOST', '<username>.mysql.pythonanywhere-services.com'),
+        'PORT': '3306',
     }
 }
 
